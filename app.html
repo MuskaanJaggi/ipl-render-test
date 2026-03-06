@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPL Auction Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #081733;
+      color: #f3f6fb;
+    }
+    .page {
+      width: min(1180px, calc(100% - 36px));
+      margin: 28px auto 48px;
+    }
+    .hero, .filters, .card, .history, .topbar {
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 22px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    }
+    .hero {
+      padding: 26px;
+      margin-bottom: 24px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 20px;
+      margin-bottom: 18px;
+    }
+    .topbar .welcome {
+      font-size: 15px;
+      color: #cfe1ff;
+    }
+    .logout-btn, .reset-btn, .bid-btn {
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      border-radius: 14px;
+      transition: 0.2s ease;
+    }
+    .logout-btn, .reset-btn {
+      background: #f6b10a;
+      color: #161616;
+      padding: 12px 16px;
+    }
+    .logout-btn:hover, .reset-btn:hover, .bid-btn:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+    h1 { margin: 0 0 10px; font-size: 36px; }
+    .hero p {
+      margin: 0;
+      color: #d7e5ff;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .filters {
+      padding: 18px;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .field label {
+      display: block;
+      font-size: 14px;
+      color: #d9e6fd;
+      margin-bottom: 8px;
+    }
+    .field input, .field select {
+      width: 100%;
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 14px 14px;
+      font-size: 15px;
+      outline: none;
+    }
+    .results-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .card {
+      overflow: hidden;
+    }
+    .photo {
+      height: 220px;
+      background: #1b2941;
+    }
+    .photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .body {
+      padding: 16px;
+    }
+    .name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .name-row h3 {
+      margin: 0;
+      font-size: 22px;
+    }
+    .pill {
+      background: #2457ff;
+      color: white;
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 13px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .stat {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .stat small { color: #b8cae6; display: block; margin-bottom: 8px; }
+    .stat strong { font-size: 18px; }
+    .bid-box {
+      margin-top: 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .bid-box label { display: block; margin-bottom: 8px; color: #d9e6fd; }
+    .bid-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .bid-row input {
+      flex: 1;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .bid-btn {
+      background: #2457ff;
+      color: white;
+      padding: 12px 16px;
+      min-width: 110px;
+    }
+    .message {
+      margin-top: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .message.error { color: #ff9494; }
+    .message.success { color: #8af1a0; }
+    .history {
+      margin-top: 12px;
+      padding: 12px;
+    }
+    .history h4 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: #dce8fb;
+    }
+    .history ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #d7e4fa;
+      font-size: 13px;
+    }
+    .empty {
+      background: rgba(255,255,255,0.04);
+      border: 1px dashed rgba(255,255,255,0.14);
+      padding: 28px;
+      border-radius: 20px;
+      text-align: center;
+      color: #cfddf4;
+    }
+    @media (max-width: 1100px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 700px) {
+      .page { width: calc(100% - 20px); }
+      .grid, .filters { grid-template-columns: 1fr; }
+      .results-bar, .topbar, .name-row, .bid-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="welcome" id="welcomeText">Welcome</div>
+      <form method="POST" action="/logout">
+        <button class="logout-btn" type="submit">Logout</button>
+      </form>
+    </div>
+
+    <div class="hero">
+      <h1>IPL Auction Dashboard</h1>
+      <p>
+        Browse players, filter by team or role, check strike rates, and place competitive bids.
+        Every new bid must be higher than the current highest bid for that player.
+      </p>
+    </div>
+
+    <div class="filters">
+      <div class="field">
+        <label for="search">Search player</label>
+        <input id="search" type="text" placeholder="Type player name" />
+      </div>
+      <div class="field">
+        <label for="team">Team</label>
+        <select id="team"><option value="">All teams</option></select>
+      </div>
+      <div class="field">
+        <label for="role">Role</label>
+        <select id="role"><option value="">All roles</option></select>
+      </div>
+      <div class="field">
+        <label for="minSr">Min strike rate</label>
+        <input id="minSr" type="number" placeholder="e.g. 130" />
+      </div>
+      <div class="field">
+        <label for="maxSr">Max strike rate</label>
+        <input id="maxSr" type="number" placeholder="e.g. 180" />
+      </div>
+      <div class="field">
+        <label for="sort">Sort</label>
+        <select id="sort">
+          <option value="name_asc">Name A-Z</option>
+          <option value="name_desc">Name Z-A</option>
+          <option value="sr_asc">Strike Rate Low-High</option>
+          <option value="sr_desc">Strike Rate High-Low</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="results-bar">
+      <div id="countText">0 players found</div>
+      <button class="reset-btn" id="resetBtn">Reset filters</button>
+    </div>
+
+    <div id="playerGrid" class="grid"></div>
+  </div>
+
+  <script>
+    const state = {
+      players: [],
+      teams: [],
+      roles: [],
+      username: ""
+    };
+
+    const els = {
+      search: document.getElementById("search"),
+      team: document.getElementById("team"),
+      role: document.getElementById("role"),
+      minSr: document.getElementById("minSr"),
+      maxSr: document.getElementById("maxSr"),
+      sort: document.getElementById("sort"),
+      resetBtn: document.getElementById("resetBtn"),
+      countText: document.getElementById("countText"),
+      playerGrid: document.getElementById("playerGrid"),
+      welcomeText: document.getElementById("welcomeText")
+    };
+
+    async function fetchMe() {
+      const res = await fetch("/api/me");
+      if (res.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+      const data = await res.json();
+      state.username = data.username;
+      els.welcomeText.textContent = `Logged in as ${data.username}`;
+    }
+
+    function buildQuery() {
+      const params = new URLSearchParams();
+      if (els.search.value.trim()) params.set("search", els.search.value.trim());
+      if (els.team.value) params.set("team", els.team.value);
+      if (els.role.value) params.set("role", els.role.value);
+      if (els.minSr.value) params.set("min_sr", els.minSr.value);
+      if (els.maxSr.value) params.set("max_sr", els.maxSr.value);
+      if (els.sort.value) params.set("sort", els.sort.value);
+      return params.toString();
+    }
+
+    async function loadPlayers() {
+      const res = await fetch(`/api/players?${buildQuery()}`);
+      if (res.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+      const data = await res.json();
+      state.players = data.players || [];
+      state.teams = data.teams || [];
+      state.roles = data.roles || [];
+      populateSelects();
+      renderPlayers();
+    }
+
+    function populateSelects() {
+      const selectedTeam = els.team.value;
+      const selectedRole = els.role.value;
+
+      els.team.innerHTML = '<option value="">All teams</option>';
+      state.teams.forEach(team => {
+        const opt = document.createElement("option");
+        opt.value = team;
+        opt.textContent = team;
+        if (team === selectedTeam) opt.selected = true;
+        els.team.appendChild(opt);
+      });
+
+      els.role.innerHTML = '<option value="">All roles</option>';
+      state.roles.forEach(role => {
+        const opt = document.createElement("option");
+        opt.value = role;
+        opt.textContent = role;
+        if (role === selectedRole) opt.selected = true;
+        els.role.appendChild(opt);
+      });
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(value || 0);
+    }
+
+    function renderPlayers() {
+      els.countText.textContent = `${state.players.length} players found`;
+      if (!state.players.length) {
+        els.playerGrid.innerHTML = '<div class="empty">No players match the current filters.</div>';
+        return;
+      }
+
+      els.playerGrid.innerHTML = state.players.map(player => `
+        <div class="card">
+          <div class="photo">
+            <img src="${player.photo_url || ''}" alt="${player.name}" onerror="this.style.display='none'" />
+          </div>
+          <div class="body">
+            <div class="name-row">
+              <h3>${player.name}</h3>
+              <span class="pill">${player.team}</span>
+            </div>
+
+            <div class="stats">
+              <div class="stat">
+                <small>Role</small>
+                <strong>${player.role}</strong>
+              </div>
+              <div class="stat">
+                <small>Strike Rate</small>
+                <strong>${player.strike_rate}</strong>
+              </div>
+            </div>
+
+            <div class="stat">
+              <small>Current Highest Bid</small>
+              <strong id="highest-${player.id}">${formatCurrency(player.current_highest_bid)}</strong>
+            </div>
+
+            <div class="bid-box">
+              <label>Your bid for ${player.name}</label>
+              <div class="bid-row">
+                <input id="bid-input-${player.id}" type="number" min="1" placeholder="Enter bid amount" />
+                <button class="bid-btn" onclick="submitBid(${player.id})">Place bid</button>
+              </div>
+              <div class="message" id="msg-${player.id}"></div>
+            </div>
+
+            <div class="history" id="history-${player.id}">
+              <h4>Recent bids</h4>
+              <ul><li>Loading...</li></ul>
+            </div>
+          </div>
+        </div>
+      `).join("");
+
+      state.players.forEach(player => loadBidHistory(player.id));
+    }
+
+    async function loadBidHistory(playerId) {
+      const holder = document.getElementById(`history-${playerId}`);
+      if (!holder) return;
+
+      const res = await fetch(`/api/bids/${playerId}`);
+      if (res.status !== 200) {
+        holder.innerHTML = '<h4>Recent bids</h4><ul><li>Unable to load bids.</li></ul>';
+        return;
+      }
+
+      const data = await res.json();
+      const bids = data.bids || [];
+      holder.innerHTML = `
+        <h4>Recent bids</h4>
+        <ul>
+          ${bids.length ? bids.map(bid => `<li>${bid.bidder_name} bid ${formatCurrency(bid.amount)}</li>`).join("") : '<li>No bids yet.</li>'}
+        </ul>
+      `;
+    }
+
+    async function submitBid(playerId) {
+      const input = document.getElementById(`bid-input-${playerId}`);
+      const msg = document.getElementById(`msg-${playerId}`);
+      const highest = document.getElementById(`highest-${playerId}`);
+      const amount = input.value;
+
+      msg.className = "message";
+      msg.textContent = "Submitting...";
+
+      const res = await fetch("/api/bid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ player_id: playerId, amount })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        msg.classList.add("error");
+        msg.textContent = data.error || "Could not place bid.";
+        return;
+      }
+
+      msg.classList.add("success");
+      msg.textContent = `${data.message} Logged in as ${state.username}.`;
+      highest.textContent = formatCurrency(data.current_highest_bid);
+      input.value = "";
+      await loadBidHistory(playerId);
+    }
+
+    function addFilterListeners() {
+      [els.search, els.team, els.role, els.minSr, els.maxSr, els.sort].forEach(el => {
+        el.addEventListener("input", loadPlayers);
+        el.addEventListener("change", loadPlayers);
+      });
+
+      els.resetBtn.addEventListener("click", () => {
+        els.search.value = "";
+        els.team.value = "";
+        els.role.value = "";
+        els.minSr.value = "";
+        els.maxSr.value = "";
+        els.sort.value = "name_asc";
+        loadPlayers();
+      });
+    }
+
+    async function init() {
+      addFilterListeners();
+      await fetchMe();
+      await loadPlayers();
+    }
+
+    init();
+    window.submitBid = submitBid;
+  </script>
+</body>
+</html>

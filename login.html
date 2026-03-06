@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPL Auction Login</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top, #17376f, #081733 58%);
+      color: #fff;
+      padding: 20px;
+    }
+    .card {
+      width: min(440px, 100%);
+      background: rgba(8, 23, 51, 0.9);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.3);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+    }
+    p {
+      margin: 0 0 22px;
+      color: #cfe1ff;
+      line-height: 1.5;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #dce8fb;
+      font-size: 14px;
+    }
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      margin-bottom: 16px;
+      font-size: 15px;
+      outline: none;
+    }
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      background: #f6b10a;
+      color: #111;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 15px;
+    }
+    .error {
+      margin-bottom: 14px;
+      color: #ffb2b2;
+      background: rgba(255, 0, 0, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.25);
+      padding: 12px;
+      border-radius: 12px;
+    }
+    .hint {
+      margin-top: 16px;
+      color: #99b7ec;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Login</h1>
+    <p>Only authorized users can access the IPL auction dashboard.</p>
+
+    <div id="errorBox"></div>
+
+    <form method="POST" action="/login">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" placeholder="Enter username" required />
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" placeholder="Enter password" required />
+
+      <button type="submit">Login</button>
+    </form>
+
+    <div class="hint">Set your own credentials on Render using ADMIN_USERNAME and ADMIN_PASSWORD.</div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "invalid") {
+      document.getElementById("errorBox").innerHTML = '<div class="error">Invalid username or password.</div>';
+    }
+  </script>
+</body>
+</html>
