@@ -13,8 +13,12 @@ app = Flask(__name__, static_folder=None)
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key-on-render")
 
 raw_db_url = os.environ.get("DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'auction.db')}")
+
+# Use psycopg v3 for PostgreSQL
 if raw_db_url.startswith("postgres://"):
-    raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
+    raw_db_url = raw_db_url.replace("postgres://", "postgresql+psycopg://", 1)
+elif raw_db_url.startswith("postgresql://"):
+    raw_db_url = raw_db_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = raw_db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -153,11 +157,11 @@ def current_highest_bid(player_id: int):
     return db.session.query(func.max(Bid.amount)).filter(Bid.player_id == player_id).scalar() or 0.0
 
 
-@app.before_request
-def ensure_tables_and_defaults():
-    db.create_all()
-    bootstrap_default_user()
-    seed_players_if_empty()
+def initialize_database():
+    with app.app_context():
+        db.create_all()
+        bootstrap_default_user()
+        seed_players_if_empty()
 
 
 @app.route("/")
@@ -184,6 +188,37 @@ def login_page():
     session["user_id"] = user.id
     session["username"] = user.username
     return redirect(url_for("home"))
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup_page():
+    if request.method == "GET":
+        if session.get("user_id"):
+            return redirect(url_for("home"))
+        return send_from_directory(BASE_DIR, "signup.html")
+
+    username = (request.form.get("username") or "").strip()
+    password = request.form.get("password") or ""
+    confirm_password = request.form.get("confirm_password") or ""
+
+    if not username or not password or not confirm_password:
+        return redirect(url_for("signup_page", error="missing"))
+
+    if password != confirm_password:
+        return redirect(url_for("signup_page", error="nomatch"))
+
+    existing_user = AppUser.query.filter(func.lower(AppUser.username) == username.lower()).first()
+    if existing_user:
+        return redirect(url_for("signup_page", error="exists"))
+
+    new_user = AppUser(
+        username=username,
+        password_hash=generate_password_hash(password)
+    )
+    db.session.add(new_user)
+    db.session.commit()
+
+    return redirect(url_for("login_page", success="created"))
 
 
 @app.route("/logout", methods=["POST"])
@@ -332,5 +367,7 @@ def bid_history(player_id: int):
     )
 
 
+initialize_database()
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
