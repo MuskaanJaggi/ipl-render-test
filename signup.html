@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up | IPL Auction</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #08142c;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 420px;
+      background: #13233f;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 32px;
+    }
+
+    p {
+      color: #c9d4e5;
+      margin-bottom: 24px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 14px;
+      border-radius: 12px;
+      border: 1px solid #334b73;
+      background: #0d1b33;
+      color: white;
+      box-sizing: border-box;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #f6b100;
+      color: #111;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      opacity: 0.95;
+    }
+
+    .flash {
+      background: #2a1d1d;
+      border: 1px solid #a94442;
+      color: #ffb3b3;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+
+    .success {
+      background: #1d2a20;
+      border-color: #3c763d;
+      color: #b7efb9;
+    }
+
+    a {
+      color: #f6b100;
+      text-decoration: none;
+    }
+
+    .bottom-text {
+      margin-top: 18px;
+      text-align: center;
+      color: #c9d4e5;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-box">
+    <h1>Create account</h1>
+    <p>Sign up to access the IPL auction dashboard.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {% if category == 'success' %}success{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/signup">
+      <input type="text" name="username" placeholder="Choose a username" required />
+      <input type="password" name="password" placeholder="Create a password" required />
+      <input type="password" name="confirm_password" placeholder="Confirm password" required />
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <div class="bottom-text">
+      Already have an account? <a href="/signin">Sign in</a>
+    </div>
+  </div>
+</body>
+</html>
